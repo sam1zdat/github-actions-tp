@@ -19,11 +19,11 @@ jobs:
       run: |
         # Création de fichiers texte et JSON
         echo "Fichier de configuration" > config.txt
-        echo "Données de build" > data.json
+        echo '{"build": "data", "timestamp": "'$(date)'"}' > data.json
         
         # Création d'un répertoire avec des logs
         mkdir -p logs
-        echo "Logs système" > logs/system.log
+        echo "Logs système - $(date)" > logs/system.log
         
         # Vérification de la création des fichiers
         echo "Fichiers créés:"
@@ -32,6 +32,7 @@ jobs:
         ls -la logs/
     
     # Étape: Upload des artefacts pour partage entre jobs
+    # IMPORTANT: Cette étape doit être dans le MÊME job que la création des fichiers
     - name: Upload artefacts
       uses: actions/upload-artifact@v4
       with:
@@ -70,9 +71,12 @@ jobs:
         ls -la
         
         echo "=== Contenu des fichiers ==="
+        echo "--- config.txt ---"
         cat config.txt
+        echo "--- data.json ---"
         cat data.json
         
         echo "=== Contenu du dossier logs ==="
         ls -la logs/
+        echo "--- logs/system.log ---"
         cat logs/system.log
