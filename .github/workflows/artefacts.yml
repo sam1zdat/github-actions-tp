@@ -1,0 +1,36 @@
+name: Gestion Artefacts
+   
+   on: [workflow_dispatch]
+   
+   jobs:
+     generation:
+       runs-on: ubuntu-latest
+       steps:
+       - name: Créer fichiers test
+         run: |
+           echo "Fichier de configuration" > config.txt
+           echo "Données de build" > data.json
+           mkdir -p logs
+           echo "Logs système" > logs/system.log
+       
+       - name: Upload artefacts
+         uses: actions/upload-artifact@v4
+         with:
+           name: bundle-production
+           path: |
+             *.txt
+             *.json
+             logs/
+           retention-days: 7
+     
+     verification:
+       runs-on: ubuntu-latest
+       needs: generation
+       steps:
+       - name: Download artefacts
+         uses: actions/download-artifact@v4
+         with:
+           name: bundle-production
+       
+       - name: Lister fichiers
+         run: ls -la
