@@ -1,0 +1,44 @@
+#
+   name: Pipeline CI Complet
+   
+   on:
+     push:
+       branches: [main]
+     pull_request:
+       branches: [main]
+   
+   jobs:
+     qualite:
+       runs-on: ubuntu-latest
+       steps:
+       - uses: actions/checkout@v4
+       
+       - name: Installation dépendances
+         run: echo "Simulation npm install"
+       
+       - name: Linting
+         run: npm run lint
+       
+       - name: Tests
+         run: npm test
+     
+     build:
+       runs-on: ubuntu-latest
+       needs: qualite
+       strategy:
+         matrix:
+           os: [ubuntu-latest, windows-latest]
+       
+       steps:
+       - uses: actions/checkout@v4
+       
+       - name: Build
+         run: |
+           mkdir -p dist
+           npm run build
+       
+       - name: Upload build
+         uses: actions/upload-artifact@v4
+         with:
+           name: build-${{ matrix.os }}
+           path: dist/
