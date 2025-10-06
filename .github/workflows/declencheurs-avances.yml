@@ -1,0 +1,22 @@
+#
+   name: Déclencheurs Avancés
+   
+   on:
+     issues:
+       types: [opened, closed]
+     
+     pull_request:
+       types: [opened, synchronize]
+     
+     schedule:
+       - cron: '0 10 * * 1'  # Lundi 10h00
+   
+   jobs:
+     log-evenement:
+       runs-on: ubuntu-latest
+       steps:
+       - name: Afficher infos
+         run: |
+           echo "Événement: ${{ github.event_name }}"
+           echo "Action: ${{ github.event.action }}"
+           echo "Déclenché par: ${{ github.actor }}"
