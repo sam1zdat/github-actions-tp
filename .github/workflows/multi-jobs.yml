@@ -1,0 +1,25 @@
+#
+   name: Workflow Multi-Jobs
+   
+   on:
+     workflow_dispatch:
+   
+   jobs:
+     preparation:
+       runs-on: ubuntu-latest
+       steps:
+       - name: Étape 1
+         run: echo "Préparation démarrée"
+       
+       - name: Générer données
+         run: echo "Données prêtes" > info.txt
+     
+     traitement:
+       runs-on: ubuntu-latest
+       needs: preparation
+       steps:
+       - name: Récupération
+         run: echo "Traitement après préparation"
+       
+       - name: Finalisation
+         run: echo "Workflow terminé avec succès"
