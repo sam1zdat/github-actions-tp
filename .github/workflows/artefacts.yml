@@ -1,36 +1,95 @@
+# Workflow: Gestion Artefacts
+# Description: Ce workflow démontre la création, le stockage et la récupération d'artefacts
+# Les artefacts permettent de persister des fichiers générés pendant l'exécution d'un job
+
 name: Gestion Artefacts
-   
-   on: [workflow_dispatch]
-   
-   jobs:
-     generation:
-       runs-on: ubuntu-latest
-       steps:
-       - name: Créer fichiers test
-         run: |
-           echo "Fichier de configuration" > config.txt
-           echo "Données de build" > data.json
-           mkdir -p logs
-           echo "Logs système" > logs/system.log
-       
-       - name: Upload artefacts
-         uses: actions/upload-artifact@v4
-         with:
-           name: bundle-production
-           path: |
-             *.txt
-             *.json
-             logs/
-           retention-days: 7
-     
-     verification:
-       runs-on: ubuntu-latest
-       needs: generation
-       steps:
-       - name: Download artefacts
-         uses: actions/download-artifact@v4
-         with:
-           name: bundle-production
-       
-       - name: Lister fichiers
-         run: ls -la
+
+# Déclenchement manuel pour un contrôle précis du processus
+on: [workflow_dispatch]
+
+# Définition des jobs
+jobs:
+  # Job: Génération des fichiers et création des artefacts
+  # Objectif: Créer des fichiers de test et les uploader en tant qu'artefacts
+  generation:
+    # Environnement d'exécution
+    runs-on: ubuntu-latest
+    
+    # Étapes séquentielles du job
+    steps:
+    # Étape: Création des fichiers de test simulés
+    - name: Créer fichiers test
+      run: |
+        # Création d'un fichier de configuration simulé
+        echo "Fichier de configuration" > config.txt
+        
+        # Création d'un fichier JSON avec des données de build simulées
+        echo '{"version": "1.0.0", "build_date": "'$(date)'"}' > data.json
+        
+        # Création d'un répertoire pour les logs
+        mkdir -p logs
+        
+        # Création d'un fichier de log simulé
+        echo "$(date) - Logs système" > logs/system.log
+        
+        # Affichage de vérification (optionnel)
+        echo "Fichiers créés:"
+        find . -type f -name "*.txt" -o -name "*.json" | head -10
+
+    # Étape: Upload des fichiers en tant qu'artefacts GitHub
+    - name: Upload artefacts
+      # Utilisation de l'action officielle GitHub pour l'upload d'artefacts
+      uses: actions/upload-artifact@v4
+      with:
+        # Nom de l'artefact pour identification
+        name: bundle-production
+        
+        # Patterns de fichiers à inclure dans l'artefact:
+        path: |
+          *.txt           # Tous les fichiers .txt
+          *.json          # Tous les fichiers .json  
+          logs/           # Tout le répertoire logs et son contenu
+        
+        # Durée de rétention automatique (7 jours avant suppression auto)
+        retention-days: 7
+
+  # Job: Vérification des artefacts téléchargés
+  # Objectif: Télécharger et vérifier l'intégrité des artefacts
+  # Ce job dépend du job "generation" pour s'exécuter
+  verification:
+    runs-on: ubuntu-latest
+    
+    # Dépendance: Ce job nécessite la complétion du job "generation"
+    needs: generation
+    
+    steps:
+    # Étape: Téléchargement des artefacts depuis le stockage GitHub
+    - name: Download artefacts
+      # Utilisation de l'action officielle GitHub pour le téléchargement
+      uses: actions/download-artifact@v4
+      with:
+        # Nom de l'artefact à télécharger (doit correspondre au nom d'upload)
+        name: bundle-production
+
+    # Étape: Vérification du contenu téléchargé
+    - name: Lister fichiers
+      run: |
+        # Affichage détaillé des fichiers téléchargés
+        echo "=== Contenu de l'artefact téléchargé ==="
+        ls -la
+        
+        # Vérification supplémentaire du répertoire logs
+        echo "=== Contenu du répertoire logs ==="
+        ls -la logs/ || echo "Répertoire logs non trouvé"
+        
+        # Affichage du contenu des fichiers (optionnel pour vérification)
+        echo "=== Contenu des fichiers ==="
+        cat config.txt 2>/dev/null || echo "Fichier config.txt non trouvé"
+        cat data.json 2>/dev/null || echo "Fichier data.json non trouvé"
+
+# Points importants sur les artefacts GitHub:
+# - Stockage: Les artefacts sont stockés sur les serveurs GitHub
+# - Taille limite: 10GB par artefact (avec restrictions selon le plan)
+# - Rétention: 90 jours par défaut, configurable entre 1-90 jours
+# - Accès: Téléchargeables depuis l'interface GitHub ou via API
+# - Utilisation typique: Fichiers de build, logs, rapports, packages
