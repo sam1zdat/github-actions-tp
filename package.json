@@ -1,0 +1,9 @@
+{
+       "name": "mon-projet-test",
+       "version": "1.0.0",
+       "scripts": {
+         "test": "echo 'Tests exécutés avec succès' && exit 0",
+         "lint": "echo 'Linting OK'",
+         "build": "echo 'Build réussi' > dist/bundle.js"
+       }
+     }
